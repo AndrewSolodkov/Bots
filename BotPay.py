@@ -3,6 +3,7 @@ import logging
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types.message import ContentType
 
+import db
 
 # Log
 logging.basicConfig(level=logging.INFO)
@@ -10,6 +11,7 @@ logging.basicConfig(level=logging.INFO)
 # init
 bot = Bot(token=config.TOKEN)
 dp = Dispatcher(bot)
+dblya = db.DBlya()
 
 # Цена
 PRICE = types.LabeledPrice(label="Подписка на 1 месяц", amount=100 * 100)  # Цена в копейках

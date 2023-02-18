@@ -55,3 +55,23 @@ class DBlya:
         self.cur.execute('''
         INSERT INTO user_logins (id, login_id) VALUES (?,?)
         ''', (telegram_id, lid))
+        self.con.commit()
+
+    def get_credentials(self, telegram_id: str) -> (str, str):
+        self.cur = self.con.cursor()
+        res = self.cur.execute('''
+            SELECT login, password 
+            FROM logins
+            JOIN user_logins on logins.id = user_logins.login_id
+            WHERE user_logins = ?''', (telegram_id, ))
+        row = res.fetchone()
+        login = ""
+        password = ""
+
+        try:
+            login = row[0]
+            password = row[1]
+        except IndexError:
+            pass
+
+        return login, password
