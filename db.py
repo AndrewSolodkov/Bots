@@ -15,6 +15,14 @@ class DBlya:
             login_id int CONSTRAINT login_fk REFERENCES logins(id)
         )
         ''')
+
+        self.cur.execute('''CREATE TABLE IF NOT EXISTS need_extension(
+                id integer PRIMARY KEY,
+                login_id integer NOT NULL,
+                extensioned integer DEFAULT 0
+            );
+         ''')
+
         self.con.commit()
 
 
