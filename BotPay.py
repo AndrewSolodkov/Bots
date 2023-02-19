@@ -13,7 +13,7 @@ bot = Bot(token=config.TOKEN)
 dp = Dispatcher(bot)
 dblya = db.DBlya()
 
-antimammoth = {} #База данных для проверки
+antimammoth = {}  # База данных для проверки
 
 # Цена
 PRICE = types.LabeledPrice(label="Подписка на 1 месяц", amount=100 * 100)  # Цена в копейках
@@ -68,17 +68,19 @@ async def pre_checkout_query(pre_checkout_q: types.PreCheckoutQuery):
 async def successful_payment(message: types.Message):
     print("Честный выигрыши - 1xbet:")
     payment_info = message.successful_payment.to_python()
-    print(message) #Принт тут для вывода того, что происходит в консоль
+    print(message)  # Принт тут для вывода того, что происходит в консоль
     for k, v in payment_info.items():
         print(f"{k} = {v}")
-    antimammoth [message.from_user.id] = True #Оплатил
+    antimammoth[message.from_user.id] = True  # Оплатил
     login, password = dblya.get_free_login(message.from_user.id)
     await bot.send_message(message.chat.id,
                            f"Платеж на сумму {message.successful_payment.total_amount // 100}"
                            f" {message.successful_payment.currency} прошел успешно{',введите логин и пароль' if message.successful_payment.invoice_payload == 'Extension' else f', ваш логин{login} ваш пароль{password}'}")
-                                                                                                                                       #квадратные скобки и потом равно, чтобы проверить что произошло
-                                                                                                                                            #и показать полностью строку или часть
-#Продление
+    # квадратные скобки и потом равно, чтобы проверить что произошло
+    # и показать полностью строку или часть
+
+
+# Продление
 @dp.message_handler(commands=['extension'])
 async def extension(message: types.Message):
     print(message)
@@ -94,20 +96,26 @@ async def extension(message: types.Message):
                            is_flexible=False,
                            prices=[PRICE],
                            start_parameter="one-month-subscription",
-                           payload="Extension") #Вводим название того, что происходит оплата или продление
+                           payload="Extension")  # Вводим название того, что происходит оплата или продление
 
 
-@dp.message_handler(commands=['credentials'])   #Проверка оплатил или нет
-def get_credentials(message: types.Message):
+@dp.message_handler(commands=['credentials'])  # Проверка оплатил или нет
+async def get_credentials(message: types.Message):
     try:
-        if antimammoth [message.from_user.id]:
+        if antimammoth[message.from_user.id]:
             arguments = message.get_args()
             arguments_splitted = arguments.split(' ')
             dblya.add_login(arguments_splitted[0], arguments_splitted[1], message.from_user.id)
-            bot.send_message(message.chat.id, text='Ожидайте, пока раб продлит вам подписку')
+            await bot.send_message(message.chat.id, text='Ожидайте, пока раб продлит вам подписку')
+        else:
+            await bot.send_message(message.chat.id,
+                                   text='Для начала оплатите подписку /extension')
     except:
-        bot.send_message(message.chat.id, text='Повторите попытку позже или обратитесь к администратору /help(idi nahui)')
-    antimammoth [message.from_user.id] = False
+        await bot.send_message(message.chat.id,
+                               text='Повторите попытку позже или обратитесь к администратору /help (idi nahui)')
+    finally:
+        antimammoth[message.from_user.id] = False
+
 
 # Запуск
 if __name__ == "__main__":
